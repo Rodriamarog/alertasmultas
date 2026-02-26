@@ -109,7 +109,8 @@ async function main() {
 				cascadeDelete: true,
 				maxSelect: 1
 			},
-			{ name: 'plate', type: 'text', required: true }
+			{ name: 'plate', type: 'text', required: true },
+			{ name: 'registered', type: 'bool' }
 		]
 	});
 
@@ -158,11 +159,14 @@ async function ensureCollection(token, schema) {
 	});
 
 	if (checkRes.ok) {
-		// Patch rules onto existing collection (idempotent)
+		const existing = await checkRes.json();
+		const existingNames = new Set(existing.fields.map((f) => f.name));
+		const missingFields = fields.filter((f) => !existingNames.has(f.name));
+
 		const patchRes = await fetch(`${PB_URL}/api/collections/${schema.name}`, {
 			method: 'PATCH',
 			headers: { Authorization: token, 'Content-Type': 'application/json' },
-			body: JSON.stringify(rules)
+			body: JSON.stringify({ ...rules, fields: [...existing.fields, ...missingFields] })
 		});
 		if (!patchRes.ok) {
 			const err = await patchRes.json();
@@ -170,6 +174,9 @@ async function ensureCollection(token, schema) {
 			process.exit(1);
 		}
 		console.log(`✓ Updated rules on '${schema.name}' collection`);
+		if (missingFields.length > 0) {
+			console.log(`  + Added fields: ${missingFields.map((f) => f.name).join(', ')}`);
+		}
 		return;
 	}
 

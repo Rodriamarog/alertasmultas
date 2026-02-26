@@ -84,6 +84,65 @@ async function pbPatch(token, path, body) {
 }
 
 /**
+ * Register unregistered plates on the Tijuana portal before scraping.
+ * Updates vehicle records in PocketBase with registered=true on success.
+ */
+async function registerPendingPlates(browser, token, vehicles) {
+	const pending = vehicles.filter((v) => v.registered !== true);
+	if (pending.length === 0) {
+		console.log('All plates already registered on portal.');
+		return;
+	}
+
+	console.log(`\nRegistering ${pending.length} pending plate(s) on portal...`);
+	const context = await browser.newContext();
+	const page = await context.newPage();
+
+	try {
+		await page.goto('https://pagos.tijuana.gob.mx/PagosEnLinea/index.aspx', {
+			waitUntil: 'networkidle',
+			timeout: 30000
+		});
+
+		// Login
+		await page.fill('#ContentPlaceHolder1_txtUsuario', TIJUANA_USER);
+		await page.fill('#ContentPlaceHolder1_txtContrasenia', TIJUANA_PASS);
+		await page.click('#ContentPlaceHolder1_btnLogin');
+		await page.waitForLoadState('networkidle');
+
+		// Navigate to traffic fines section
+		await page.click('#ContentPlaceHolder1_multastransito');
+		await page.waitForSelector('#MainContent_gvPlacasRegistradas', { timeout: 15000 });
+
+		for (const vehicle of pending) {
+			const plate = vehicle.plate;
+			console.log(`  Registering plate: ${plate}`);
+			try {
+				await page.fill('#MainContent_tbNoPlacas', plate);
+				await page.click('#MainContent_btnAgregarPlacas');
+				await page.waitForLoadState('networkidle');
+
+				const appeared = await page
+					.locator('#MainContent_gvPlacasRegistradas tr')
+					.filter({ hasText: plate })
+					.count();
+
+				if (appeared > 0) {
+					await pbPatch(token, `collections/vehicles/records/${vehicle.id}`, { registered: true });
+					console.log(`    ✓ Plate ${plate} registered`);
+				} else {
+					console.error(`    ✗ Plate ${plate} not found in table after registration`);
+				}
+			} catch (err) {
+				console.error(`    ✗ Failed to register plate ${plate}:`, err.message);
+			}
+		}
+	} finally {
+		await context.close();
+	}
+}
+
+/**
  * Scrape fines for a given plate from the Tijuana portal.
  * Returns array of { fecha, descripcion, monto, folio }.
  */
@@ -166,6 +225,8 @@ async function main() {
 	}
 
 	const browser = await chromium.launch({ headless: true });
+
+	await registerPendingPlates(browser, token, vehicles);
 
 	const twilioClient =
 		TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN
