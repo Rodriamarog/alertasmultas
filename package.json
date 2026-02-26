@@ -10,7 +10,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"setup": "node scripts/setup.js"
+		"setup": "node scripts/setup.js",
+		"scraper": "node scripts/scraper.js"
 	},
 	"devDependencies": {
 		"@internationalized/date": "^3.11.0",
@@ -36,7 +37,9 @@
 	"dependencies": {
 		"@fontsource-variable/bricolage-grotesque": "^5.2.10",
 		"@fontsource-variable/inter": "^5.2.8",
+		"playwright": "^1.49.0",
 		"pocketbase": "^0.26.8",
-		"stripe": "^20.3.1"
+		"stripe": "^20.3.1",
+		"twilio": "^5.4.0"
 	}
 }

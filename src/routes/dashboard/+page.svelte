@@ -3,6 +3,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Input } from '$lib/components/ui/input';
 
 	let { data } = $props();
 
@@ -12,6 +13,45 @@
 		pro: 'default',
 		business: 'outline'
 	};
+
+	let vehicles = $state(data.vehicles ?? []);
+	let fines = $state(data.fines ?? []);
+	let newPlate = $state('');
+	let addError = $state('');
+	let adding = $state(false);
+
+	async function addVehicle() {
+		addError = '';
+		const plate = newPlate.trim().toUpperCase();
+		if (!plate) return;
+		adding = true;
+		try {
+			const res = await fetch('/api/vehicles', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ plate })
+			});
+			const json = await res.json();
+			if (!res.ok) {
+				addError = json.error ?? 'Failed to add vehicle';
+				return;
+			}
+			vehicles = [...vehicles, json];
+			newPlate = '';
+		} catch {
+			addError = 'Network error';
+		} finally {
+			adding = false;
+		}
+	}
+
+	async function deleteVehicle(id: string) {
+		const res = await fetch(`/api/vehicles/${id}`, { method: 'DELETE' });
+		if (res.ok) {
+			vehicles = vehicles.filter((v) => v.id !== id);
+			fines = fines.filter((f) => f.vehicle !== id);
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-[#fafafa]">
@@ -59,7 +99,7 @@
 		<!-- Header -->
 		<div class="mb-8">
 			<h1 class="text-3xl font-semibold text-gray-900">Welcome back</h1>
-			<p class="mt-2 text-sm text-gray-600">Manage your account and view your activity</p>
+			<p class="mt-2 text-sm text-gray-600">Manage your vehicles and monitor traffic fines</p>
 		</div>
 
 		<!-- Stats Grid -->
@@ -83,63 +123,76 @@
 				</Card.Content>
 			</Card.Root>
 
-			<!-- Security -->
+			<!-- Vehicles count -->
 			<Card.Root>
 				<Card.Content class="pt-6">
 					<div class="flex items-center justify-between mb-4">
 						<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l1 1h1m0 0h8m-9 0H3m11 0h1l4-4V9a1 1 0 00-1-1h-4l-3 3v5h3z" />
 						</svg>
-						<Badge variant="secondary">Encrypted</Badge>
+						<Badge variant="secondary">{vehicles.length}</Badge>
 					</div>
-					<h3 class="text-sm font-medium text-gray-600">Security</h3>
-					<p class="mt-2 text-2xl font-semibold text-gray-900">Protected</p>
-					<p class="mt-1 text-xs text-gray-500">PocketBase authentication</p>
+					<h3 class="text-sm font-medium text-gray-600">Monitored Vehicles</h3>
+					<p class="mt-2 text-2xl font-semibold text-gray-900">{vehicles.length}</p>
+					<p class="mt-1 text-xs text-gray-500">Registered plates</p>
 				</Card.Content>
 			</Card.Root>
 
-			<!-- Session -->
+			<!-- Fines count -->
 			<Card.Root>
 				<Card.Content class="pt-6">
 					<div class="flex items-center justify-between mb-4">
 						<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
 						</svg>
-						<Badge variant="secondary">Active</Badge>
+						<Badge variant={fines.length > 0 ? 'default' : 'secondary'}>{fines.length}</Badge>
 					</div>
-					<h3 class="text-sm font-medium text-gray-600">Session</h3>
-					<p class="mt-2 text-2xl font-semibold text-gray-900">Active</p>
-					<p class="mt-1 text-xs text-gray-500">Managed by PocketBase</p>
+					<h3 class="text-sm font-medium text-gray-600">Total Fines</h3>
+					<p class="mt-2 text-2xl font-semibold text-gray-900">{fines.length}</p>
+					<p class="mt-1 text-xs text-gray-500">Detected across all plates</p>
 				</Card.Content>
 			</Card.Root>
 		</div>
 
-		<!-- Content Cards -->
+		<!-- Vehicles + Account -->
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			<!-- Authentication Details -->
+			<!-- Vehicle Management -->
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>Authentication Stack</Card.Title>
+					<Card.Title>Vehicles</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<div class="space-y-3">
-						{#each [
-							{ title: 'PocketBase', desc: 'Self-hosted auth & database' },
-							{ title: 'Email Verification', desc: 'Built-in verification flow' },
-							{ title: 'Cookie Sessions', desc: 'HTTP-only secure cookies' },
-							{ title: 'Self-Hosted', desc: 'No external auth dependencies' }
-						] as item}
-							<div class="flex items-start gap-3">
-								<svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-								</svg>
-								<div>
-									<p class="text-sm font-medium text-gray-900">{item.title}</p>
-									<p class="text-xs text-gray-500">{item.desc}</p>
-								</div>
-							</div>
-						{/each}
+					<div class="flex gap-2 mb-4">
+						<Input
+							placeholder="License plate (e.g. ABC-1234)"
+							bind:value={newPlate}
+							onkeydown={(e) => e.key === 'Enter' && addVehicle()}
+						/>
+						<Button onclick={addVehicle} disabled={adding}>
+							{adding ? 'Adding…' : 'Add'}
+						</Button>
 					</div>
+					{#if addError}
+						<p class="text-xs text-red-600 mb-3">{addError}</p>
+					{/if}
+					{#if vehicles.length === 0}
+						<p class="text-sm text-gray-500 text-center py-4">No vehicles registered yet.</p>
+					{:else}
+						<ul class="space-y-2">
+							{#each vehicles as vehicle (vehicle.id)}
+								<li class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md">
+									<span class="text-sm font-medium text-gray-900">{vehicle.plate}</span>
+									<button
+										class="text-xs text-red-500 hover:text-red-700"
+										onclick={() => deleteVehicle(vehicle.id)}
+									>
+										Remove
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</Card.Content>
 			</Card.Root>
 
@@ -171,43 +224,45 @@
 		<div class="mt-8">
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>Recent Fines</Card.Title>
+					<Card.Title>Detected Fines</Card.Title>
 				</Card.Header>
 				<div class="overflow-x-auto">
 					<table class="w-full">
 						<thead class="bg-gray-50 border-t border-gray-200">
 							<tr>
-								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Licence Plate</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plate</th>
 								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fine</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notified</th>
 							</tr>
 						</thead>
 						<tbody class="bg-white divide-y divide-gray-200">
-							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">ABC-1234</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2026-02-15</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$75.00</td>
-							</tr>
-							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">XYZ-5678</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2026-02-14</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$120.00</td>
-							</tr>
-							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">DEF-9012</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2026-02-13</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$50.00</td>
-							</tr>
-							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">GHI-3456</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2026-02-12</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$95.00</td>
-							</tr>
-							<tr class="hover:bg-gray-50">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">JKL-7890</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2026-02-11</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$150.00</td>
-							</tr>
+							{#if fines.length === 0}
+								<tr>
+									<td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+										No fines detected yet. Add a vehicle and run the scraper.
+									</td>
+								</tr>
+							{:else}
+								{#each fines as fine (fine.id)}
+									<tr class="hover:bg-gray-50">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+											{fine.expand?.vehicle?.plate ?? '—'}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{fine.fecha}</td>
+										<td class="px-6 py-4 text-sm text-gray-600">{fine.descripcion}</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fine.monto.toLocaleString()} MXN</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											{#if fine.notified}
+												<Badge variant="default">Sent</Badge>
+											{:else}
+												<Badge variant="secondary">Pending</Badge>
+											{/if}
+										</td>
+									</tr>
+								{/each}
+							{/if}
 						</tbody>
 					</table>
 				</div>

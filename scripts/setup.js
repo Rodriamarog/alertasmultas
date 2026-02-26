@@ -91,9 +91,101 @@ async function main() {
 		console.log('✓ Users collection already has all required fields');
 	}
 
+	// Create vehicles collection if it doesn't exist
+	await ensureCollection(token, {
+		name: 'vehicles',
+		type: 'base',
+		listRule: 'user = @request.auth.id',
+		viewRule: 'user = @request.auth.id',
+		createRule: '@request.auth.id != ""',
+		updateRule: 'user = @request.auth.id',
+		deleteRule: 'user = @request.auth.id',
+		fields: [
+			{
+				name: 'user',
+				type: 'relation',
+				required: true,
+				collectionId: collection.id,
+				cascadeDelete: true,
+				maxSelect: 1
+			},
+			{ name: 'plate', type: 'text', required: true }
+		]
+	});
+
+	// Create fines collection if it doesn't exist
+	const vehiclesRes = await fetch(`${PB_URL}/api/collections/vehicles`, {
+		headers: { Authorization: token }
+	});
+	const vehiclesCollection = await vehiclesRes.json();
+
+	await ensureCollection(token, {
+		name: 'fines',
+		type: 'base',
+		listRule: 'vehicle.user = @request.auth.id',
+		viewRule: 'vehicle.user = @request.auth.id',
+		createRule: null,
+		updateRule: null,
+		deleteRule: 'vehicle.user = @request.auth.id',
+		fields: [
+			{
+				name: 'vehicle',
+				type: 'relation',
+				required: true,
+				collectionId: vehiclesCollection.id,
+				cascadeDelete: true,
+				maxSelect: 1
+			},
+			{ name: 'folio', type: 'text' },
+			{ name: 'fecha', type: 'text' },
+			{ name: 'descripcion', type: 'text' },
+			{ name: 'monto', type: 'number' },
+			{ name: 'notified', type: 'bool' }
+		]
+	});
+
 	console.log('\n✓ PocketBase setup complete!');
 	console.log('\nFor local Stripe webhook testing:');
 	console.log('  stripe listen --forward-to localhost:5173/api/webhooks/stripe\n');
+}
+
+async function ensureCollection(token, schema) {
+	const { fields, ...rules } = schema;
+
+	// Check if collection already exists
+	const checkRes = await fetch(`${PB_URL}/api/collections/${schema.name}`, {
+		headers: { Authorization: token }
+	});
+
+	if (checkRes.ok) {
+		// Patch rules onto existing collection (idempotent)
+		const patchRes = await fetch(`${PB_URL}/api/collections/${schema.name}`, {
+			method: 'PATCH',
+			headers: { Authorization: token, 'Content-Type': 'application/json' },
+			body: JSON.stringify(rules)
+		});
+		if (!patchRes.ok) {
+			const err = await patchRes.json();
+			console.error(`Failed to patch rules on '${schema.name}':`, JSON.stringify(err));
+			process.exit(1);
+		}
+		console.log(`✓ Updated rules on '${schema.name}' collection`);
+		return;
+	}
+
+	const createRes = await fetch(`${PB_URL}/api/collections`, {
+		method: 'POST',
+		headers: { Authorization: token, 'Content-Type': 'application/json' },
+		body: JSON.stringify(schema)
+	});
+
+	if (!createRes.ok) {
+		const err = await createRes.json();
+		console.error(`Failed to create '${schema.name}' collection:`, JSON.stringify(err));
+		process.exit(1);
+	}
+
+	console.log(`✓ Created collection '${schema.name}'`);
 }
 
 main().catch((err) => {
