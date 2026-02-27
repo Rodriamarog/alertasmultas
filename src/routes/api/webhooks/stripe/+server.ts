@@ -4,6 +4,9 @@ import { env } from '$env/dynamic/private';
 import PocketBase from 'pocketbase';
 import { stripe, webhookSecret } from '$lib/server/stripe';
 import type Stripe from 'stripe';
+import twilio from 'twilio';
+
+const WELCOME_TEMPLATE_SID = 'HXd9966754893693dff0805363cd061b61';
 
 async function getAdminPb() {
 	const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL || 'http://localhost:8090');
@@ -103,6 +106,25 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 		subscription_status: 'active',
 		subscription_updated_at: new Date().toISOString()
 	});
+
+	// Send welcome WhatsApp notification
+	const phone = user.phone;
+	if (phone && env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_WHATSAPP_FROM) {
+		try {
+			const twilioClient = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+			await twilioClient.messages.create({
+				from: env.TWILIO_WHATSAPP_FROM,
+				to: `whatsapp:${phone}`,
+				contentSid: WELCOME_TEMPLATE_SID,
+				contentVariables: JSON.stringify({
+					'1': plates.join(' | ')
+				})
+			});
+			console.log(`✓ Welcome WhatsApp sent to ${phone}`);
+		} catch (err) {
+			console.error('Failed to send welcome WhatsApp:', err);
+		}
+	}
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
