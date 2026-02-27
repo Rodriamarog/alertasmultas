@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { chromium } from 'playwright';
 import twilio from 'twilio';
+import { notifyNewFine } from './lib/notify.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -258,37 +259,12 @@ async function main() {
 
 		for (const fine of fines) {
 			if (existingFolios.has(fine.folio)) continue;
-
-			// Insert new fine
-			const record = await pbPost(token, 'collections/fines/records', {
-				vehicle: vehicle.id,
-				folio: fine.folio,
-				fecha: fine.fecha,
-				descripcion: fine.descripcion,
-				monto: fine.monto,
-				notified: false
-			});
-			console.log(`  + New fine: ${fine.folio} — $${fine.monto}`);
+			await notifyNewFine(
+				{ pbUrl: PB_URL, token, twilioClient, twilioFrom: TWILIO_WHATSAPP_FROM },
+				vehicle,
+				fine
+			);
 			totalNew++;
-
-			// Send WhatsApp notification
-			if (twilioClient && user?.phone && TWILIO_WHATSAPP_FROM) {
-				try {
-					await twilioClient.messages.create({
-						from: TWILIO_WHATSAPP_FROM,
-						to: `whatsapp:${user.phone}`,
-						body: `🚨 Nueva multa detectada\nPlaca: ${plate}\nFecha: ${fine.fecha}\nDescripción: ${fine.descripcion}\nMonto: $${fine.monto} MXN`
-					});
-					console.log(`  ✓ WhatsApp sent to ${user.phone}`);
-
-					// Mark as notified
-					await pbPatch(token, `collections/fines/records/${record.id}`, {
-						notified: true
-					});
-				} catch (err) {
-					console.error(`  Error sending WhatsApp for ${fine.folio}:`, err.message);
-				}
-			}
 		}
 	}
 
