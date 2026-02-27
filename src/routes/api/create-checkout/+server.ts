@@ -12,10 +12,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const body = await request.json();
-		const { priceId } = body;
+		const { quantity, plates } = body as { quantity: number; plates: string[] };
 
+		if (!quantity || quantity < 1) {
+			return json({ error: 'Quantity must be at least 1' }, { status: 400 });
+		}
+
+		if (!plates || plates.length !== quantity) {
+			return json({ error: 'Plates count must match quantity' }, { status: 400 });
+		}
+
+		const priceId = env.STRIPE_PRICE_ID_VEHICLE;
 		if (!priceId) {
-			return json({ error: 'Price ID required' }, { status: 400 });
+			return json({ error: 'Vehicle price not configured' }, { status: 500 });
 		}
 
 		// Get or create Stripe customer
@@ -36,10 +45,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const checkoutSession = await stripe.checkout.sessions.create({
 			mode: 'subscription',
 			customer: customerId,
-			line_items: [{ price: priceId, quantity: 1 }],
+			line_items: [{ price: priceId, quantity }],
 			success_url: `${env.PUBLIC_APP_URL || 'http://localhost:5173'}/dashboard?success=true`,
 			cancel_url: `${env.PUBLIC_APP_URL || 'http://localhost:5173'}?cancelled=true`,
-			metadata: { userId: user.id }
+			metadata: {
+				userId: user.id,
+				plates: plates.join(',')
+			},
+			subscription_data: {
+				metadata: { userId: user.id }
+			}
 		});
 
 		return json({ url: checkoutSession.url });

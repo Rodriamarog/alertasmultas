@@ -8,16 +8,97 @@
 
 	let vehicles = $state(data.vehicles ?? []);
 	let fines = $state(data.fines ?? []);
-	let newPlate = $state('');
-	let addError = $state('');
-	let adding = $state(false);
 	let activeTab = $state<'vehiculos' | 'multas'>('multas');
 
-	async function addVehicle() {
-		addError = '';
-		const plate = newPlate.trim().toUpperCase();
+	// Modal state
+	let showModal = $state(false);
+	let modalError = $state('');
+	let modalBusy = $state(false);
+
+	// Non-subscribed flow (multi-step)
+	let step = $state<1 | 2>(1);
+	let desiredQuantity = $state(1);
+	let pendingPlates = $state<string[]>([]);
+	let plateInput = $state('');
+
+	// Subscribed flow (single-step)
+	let singlePlateInput = $state('');
+
+	const isSubscribed = $derived(data.user.subscription_status === 'active');
+
+	function openModal() {
+		showModal = true;
+		modalError = '';
+		step = 1;
+		desiredQuantity = 1;
+		pendingPlates = [];
+		plateInput = '';
+		singlePlateInput = '';
+	}
+
+	function closeModal() {
+		showModal = false;
+	}
+
+	function validatePlate(raw: string): { plate: string; error: string | null } {
+		const plate = raw.trim().toUpperCase().replace(/\s+/g, '');
+		if (plate.length < 7) return { plate, error: 'La placa debe tener al menos 7 caracteres' };
+		if (!/^[A-Z0-9]+$/.test(plate)) return { plate, error: 'Solo se permiten letras y números' };
+		return { plate, error: null };
+	}
+
+	// Non-subscribed: add plate to pending list
+	function addPendingPlate() {
+		const { plate, error } = validatePlate(plateInput);
 		if (!plate) return;
-		adding = true;
+		if (error) { modalError = error; return; }
+		if (pendingPlates.includes(plate)) {
+			modalError = 'Esa placa ya está en la lista';
+			return;
+		}
+		modalError = '';
+		pendingPlates = [...pendingPlates, plate];
+		plateInput = '';
+	}
+
+	function removePendingPlate(plate: string) {
+		pendingPlates = pendingPlates.filter((p) => p !== plate);
+	}
+
+	// Non-subscribed: go to Stripe checkout
+	async function goToCheckout() {
+		if (pendingPlates.length !== desiredQuantity) {
+			modalError = `Agrega exactamente ${desiredQuantity} placa(s)`;
+			return;
+		}
+		modalBusy = true;
+		modalError = '';
+		try {
+			const res = await fetch('/api/create-checkout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ quantity: desiredQuantity, plates: pendingPlates })
+			});
+			const json = await res.json();
+			if (!res.ok) {
+				modalError = json.error ?? 'No se pudo iniciar el pago';
+				return;
+			}
+			window.location.href = json.url;
+		} catch {
+			modalError = 'Error de red';
+		} finally {
+			modalBusy = false;
+		}
+	}
+
+	// Subscribed: add single plate directly
+	async function addSubscribedVehicle() {
+		const { plate, error } = validatePlate(singlePlateInput);
+		if (!plate) return;
+		if (error) { modalError = error; return; }
+		modalBusy = true;
+		modalError = '';
 		try {
 			const res = await fetch('/api/vehicles', {
 				method: 'POST',
@@ -26,19 +107,28 @@
 			});
 			const json = await res.json();
 			if (!res.ok) {
-				addError = json.error ?? 'No se pudo agregar el vehículo';
+				modalError = json.error ?? 'No se pudo agregar el vehículo';
 				return;
 			}
 			vehicles = [...vehicles, json];
-			newPlate = '';
+			closeModal();
 		} catch {
-			addError = 'Error de red';
+			modalError = 'Error de red';
 		} finally {
-			adding = false;
+			modalBusy = false;
 		}
 	}
 
-	async function deleteVehicle(id: string) {
+	let confirmDeleteId = $state<string | null>(null);
+
+	function promptDelete(id: string) {
+		confirmDeleteId = id;
+	}
+
+	async function confirmDelete() {
+		if (!confirmDeleteId) return;
+		const id = confirmDeleteId;
+		confirmDeleteId = null;
 		const res = await fetch(`/api/vehicles/${id}`, { method: 'DELETE' });
 		if (res.ok) {
 			vehicles = vehicles.filter((v) => v.id !== id);
@@ -103,20 +193,7 @@
 		<div class="{activeTab === 'vehiculos' ? 'flex' : 'hidden'} lg:flex w-full lg:w-64 lg:shrink-0 lg:border-r flex-col overflow-y-auto">
 			<div class="p-4">
 				<h2 class="text-sm font-semibold text-gray-900 mb-3 hidden lg:block">Vehículos</h2>
-				<div class="flex gap-2 mb-2">
-					<Input
-						placeholder="ABC-1234"
-						bind:value={newPlate}
-						onkeydown={(e) => e.key === 'Enter' && addVehicle()}
-						class="text-base"
-					/>
-					<Button onclick={addVehicle} disabled={adding} class="shrink-0">
-						{adding ? '…' : 'Agregar'}
-					</Button>
-				</div>
-				{#if addError}
-					<p class="text-sm text-red-600 mb-2">{addError}</p>
-				{/if}
+				<Button onclick={openModal} class="w-full">Agregar vehículo</Button>
 			</div>
 			<hr class="border-gray-200" />
 			{#if vehicles.length === 0}
@@ -128,7 +205,7 @@
 							<span class="text-sm font-medium text-gray-900">{vehicle.plate}</span>
 							<button
 								class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 active:text-red-600 transition-colors rounded-full hover:bg-red-50"
-								onclick={() => deleteVehicle(vehicle.id)}
+								onclick={() => promptDelete(vehicle.id)}
 								aria-label="Eliminar {vehicle.plate}"
 							>✕</button>
 						</li>
@@ -185,3 +262,122 @@
 		</div>
 	</div>
 </div>
+
+<!-- Modal overlay -->
+{#if showModal}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={(e) => e.target === e.currentTarget && closeModal()}
+	>
+		<div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+			{#if isSubscribed}
+				<!-- Single-step: already subscribed -->
+				<h2 class="text-base font-semibold text-gray-900 mb-4">Agregar vehículo</h2>
+				<p class="text-sm text-gray-500 mb-4">$29 MXN/mes será agregado a tu factura.</p>
+				<Input
+					placeholder="ABC1234"
+					bind:value={singlePlateInput}
+					onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && addSubscribedVehicle()}
+					class="mb-3 text-base"
+				/>
+				{#if modalError}
+					<p class="text-sm text-red-600 mb-3">{modalError}</p>
+				{/if}
+				<div class="flex gap-2">
+					<Button variant="outline" onclick={closeModal} class="flex-1">Cancelar</Button>
+					<Button onclick={addSubscribedVehicle} disabled={modalBusy} class="flex-1">
+						{modalBusy ? '…' : 'Agregar'}
+					</Button>
+				</div>
+			{:else if step === 1}
+				<!-- Step 1: how many plates -->
+				<h2 class="text-base font-semibold text-gray-900 mb-1">Monitoreo de vehículos</h2>
+				<p class="text-sm text-gray-500 mb-4">$29 MXN por placa al mes.</p>
+				<label for="quantity-input" class="block text-sm font-medium text-gray-700 mb-1">
+					¿Cuántas placas quieres monitorear?
+				</label>
+				<Input
+					id="quantity-input"
+					type="number"
+					min="1"
+					bind:value={desiredQuantity}
+					class="mb-4 text-base"
+				/>
+				<div class="flex gap-2">
+					<Button variant="outline" onclick={closeModal} class="flex-1">Cancelar</Button>
+					<Button
+						onclick={() => { step = 2; modalError = ''; }}
+						disabled={desiredQuantity < 1}
+						class="flex-1"
+					>
+						Siguiente
+					</Button>
+				</div>
+			{:else}
+				<!-- Step 2: add plates one by one -->
+				<h2 class="text-base font-semibold text-gray-900 mb-1">Agrega tus placas</h2>
+				<p class="text-sm text-gray-500 mb-4">
+					{pendingPlates.length}/{desiredQuantity} placa(s) agregadas
+				</p>
+				{#if pendingPlates.length < desiredQuantity}
+					<div class="flex gap-2 mb-3">
+						<Input
+							placeholder="ABC1234"
+							bind:value={plateInput}
+							onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && addPendingPlate()}
+							class="text-base"
+						/>
+						<Button onclick={addPendingPlate} variant="outline" class="shrink-0">+</Button>
+					</div>
+				{/if}
+				{#if pendingPlates.length > 0}
+					<ul class="mb-3 space-y-1">
+						{#each pendingPlates as plate}
+							<li class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
+								<span class="font-medium">{plate}</span>
+								<button
+									class="text-gray-400 hover:text-red-500 transition-colors"
+									onclick={() => removePendingPlate(plate)}
+								>✕</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+				{#if modalError}
+					<p class="text-sm text-red-600 mb-3">{modalError}</p>
+				{/if}
+				<div class="flex gap-2">
+					<Button variant="outline" onclick={() => (step = 1)} class="flex-1">Atrás</Button>
+					<Button
+						onclick={goToCheckout}
+						disabled={modalBusy || pendingPlates.length !== desiredQuantity}
+						class="flex-1"
+					>
+						{modalBusy ? '…' : 'Ir al pago'}
+					</Button>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- Delete confirmation modal -->
+{#if confirmDeleteId}
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={(e) => e.target === e.currentTarget && (confirmDeleteId = null)}
+	>
+		<div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+			<h2 class="text-base font-semibold text-gray-900 mb-2">¿Eliminar vehículo?</h2>
+			<p class="text-sm text-gray-500 mb-6">
+				Tu factura mensual se reducirá $29 MXN al eliminar esta placa.
+			</p>
+			<div class="flex gap-2">
+				<Button variant="outline" onclick={() => (confirmDeleteId = null)} class="flex-1">Cancelar</Button>
+				<Button variant="destructive" onclick={confirmDelete} class="flex-1">Eliminar</Button>
+			</div>
+		</div>
+	</div>
+{/if}

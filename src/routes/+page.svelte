@@ -9,6 +9,7 @@
 		Users,
 		KeyRound,
 		MapPin,
+		ShieldCheck,
 		Check,
 		Shield
 	} from '@lucide/svelte';
@@ -65,22 +66,22 @@
 			<p class="text-center text-gray-500 mb-12 text-base md:text-lg">Y mientras no lo sabes, el reloj corre.</p>
 			<div class="grid md:grid-cols-3 gap-5">
 				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<EyeOff class="w-5 h-5 text-gray-700" />
+					<div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+						<EyeOff class="w-5 h-5 text-orange-500" />
 					</div>
 					<h3 class="text-base font-bold mb-2 text-gray-900">Las multas de estacionamiento son invisibles</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">No siempre te dejan papel. La infracción va directo al sistema y tú no te enteras. La primera vez que lo sabes puede ser cuando ya se duplicó.</p>
 				</div>
 				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<TrendingUp class="w-5 h-5 text-gray-700" />
+					<div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+						<TrendingUp class="w-5 h-5 text-red-500" />
 					</div>
 					<h3 class="text-base font-bold mb-2 text-gray-900">Si no pagas a tiempo, el monto se duplica</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">Las multas no pagadas acumulan recargos rápidamente. Lo que hoy son $500 pesos, pasado el plazo puede costar el doble.</p>
 				</div>
 				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<AlertTriangle class="w-5 h-5 text-gray-700" />
+					<div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+						<AlertTriangle class="w-5 h-5 text-red-600" />
 					</div>
 					<h3 class="text-base font-bold mb-2 text-gray-900">Con multa pendiente, te mandan al corralón</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">Si te detienen en un retén con una infracción pendiente, se llevan tu vehículo. Sacarlo del corralón puede costarte mucho más que la multa original.</p>
@@ -96,22 +97,22 @@
 			<p class="text-center text-gray-500 mb-12 text-base md:text-lg">Simple, automático, sin complicaciones.</p>
 			<div class="grid md:grid-cols-3 gap-8 md:gap-12">
 				<div class="flex flex-col items-center text-center">
-					<div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-5 shrink-0">
-						<ClipboardList class="w-6 h-6 text-gray-900" />
+					<div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-5 shrink-0">
+						<ClipboardList class="w-6 h-6 text-blue-600" />
 					</div>
 					<h3 class="font-bold text-lg mb-2 text-gray-900">Registra tus placas</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">Crea tu cuenta y agrega las placas que quieres monitorear. Tarda menos de un minuto.</p>
 				</div>
 				<div class="flex flex-col items-center text-center">
-					<div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-5 shrink-0">
-						<ScanSearch class="w-6 h-6 text-gray-900" />
+					<div class="w-14 h-14 bg-violet-50 rounded-2xl flex items-center justify-center mb-5 shrink-0">
+						<ScanSearch class="w-6 h-6 text-violet-600" />
 					</div>
 					<h3 class="font-bold text-lg mb-2 text-gray-900">Monitoreamos por ti</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">Revisamos el portal oficial de multas de Tijuana automáticamente todos los días sin que tengas que hacer nada.</p>
 				</div>
 				<div class="flex flex-col items-center text-center">
-					<div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-5 shrink-0">
-						<Bell class="w-6 h-6 text-gray-900" />
+					<div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-5 shrink-0">
+						<Bell class="w-6 h-6 text-green-600" />
 					</div>
 					<h3 class="font-bold text-lg mb-2 text-gray-900">Te avisamos por WhatsApp</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">En cuanto aparezca una multa, recibes un mensaje al instante con la fecha, descripción y monto.</p>
@@ -125,24 +126,31 @@
 		<div class="max-w-5xl mx-auto">
 			<h2 class="text-3xl md:text-4xl font-bold text-center mb-3 text-gray-900">¿Para quién es?</h2>
 			<p class="text-center text-gray-500 mb-12 text-base md:text-lg">Si tienes placas en Tijuana, esto es para ti.</p>
-			<div class="grid md:grid-cols-3 gap-5">
+			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<Users class="w-5 h-5 text-gray-700" />
-					</div>
-					<h3 class="font-bold text-lg mb-2 text-gray-900">Papás con hijos conductores</h3>
-					<p class="text-gray-500 text-sm leading-relaxed">Tienes varios autos a tu nombre y tus hijos los manejan. Con AlertasMultas sabes al instante si alguien acumula una multa, antes de que se duplique.</p>
-				</div>
-				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<KeyRound class="w-5 h-5 text-gray-700" />
+					<div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
+						<KeyRound class="w-5 h-5 text-amber-600" />
 					</div>
 					<h3 class="font-bold text-lg mb-2 text-gray-900">Arrendadores de vehículos</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">Rentas tu carro y quien lo usa no te avisa de nada. Monitorea tus placas y entérate de cualquier infracción antes de que sea un problema.</p>
 				</div>
 				<div class="bg-white rounded-2xl p-6 border border-gray-200">
-					<div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-						<MapPin class="w-5 h-5 text-gray-700" />
+					<div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+						<Users class="w-5 h-5 text-blue-600" />
+					</div>
+					<h3 class="font-bold text-lg mb-2 text-gray-900">Padres con hijos conductores</h3>
+					<p class="text-gray-500 text-sm leading-relaxed">Tienes varios autos a tu nombre y tus hijos los manejan. Con AlertasMultas sabes al instante si alguien acumula una multa, antes de que se duplique.</p>
+				</div>
+				<div class="bg-white rounded-2xl p-6 border border-gray-200">
+					<div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center mb-4">
+						<ShieldCheck class="w-5 h-5 text-indigo-600" />
+					</div>
+					<h3 class="font-bold text-lg mb-2 text-gray-900">Aseguradora de vehículos</h3>
+					<p class="text-gray-500 text-sm leading-relaxed">Tienes una flota asegurada y necesitas saber si hay infracciones pendientes antes de renovar o liquidar un siniestro. Monitorea todas tus placas desde un solo lugar.</p>
+				</div>
+				<div class="bg-white rounded-2xl p-6 border border-gray-200">
+					<div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-4">
+						<MapPin class="w-5 h-5 text-emerald-600" />
 					</div>
 					<h3 class="font-bold text-lg mb-2 text-gray-900">Cualquier tijuanense</h3>
 					<p class="text-gray-500 text-sm leading-relaxed">En Tijuana las multas sorpresa son una realidad. No esperes a que te paren o a que tu carro ya esté en el corralón para enterarte.</p>

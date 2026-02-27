@@ -16,15 +16,15 @@
 	<div class="w-full max-w-md">
 		<div class="mb-8 flex justify-center">
 			<a href="/" class="text-lg">
-				<span class="font-bold text-slate-800">Alert</span><span class="text-slate-500">as</span>
+				<span class="font-bold text-slate-800">Alertas</span><span class="text-slate-500">Multas</span>
 			</a>
 		</div>
 
 		<div class="text-center mb-8">
-			<h1 class="text-4xl font-bold text-gray-900 mb-2">Create account</h1>
+			<h1 class="text-4xl font-bold text-gray-900 mb-2">Crear cuenta</h1>
 			<p class="text-slate-600">
-				Already have an account?
-				<a href={loginUrl} class="text-gray-900 hover:underline font-medium">Sign in</a>
+				¿Ya tienes cuenta?
+				<a href={loginUrl} class="text-gray-900 hover:underline font-medium">Inicia sesión</a>
 			</p>
 		</div>
 
@@ -35,9 +35,9 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					<div>
-						<h3 class="text-sm font-medium text-green-800">Account created successfully!</h3>
+						<h3 class="text-sm font-medium text-green-800">¡Cuenta creada!</h3>
 						<p class="text-xs text-green-700 mt-1">
-							Please check your email <strong>{form.email}</strong> to verify your account.
+							Revisa tu correo <strong>{form.email}</strong> para verificar tu cuenta.
 						</p>
 					</div>
 				</div>
@@ -61,28 +61,52 @@
 				return async ({ update }) => { await update(); loading = false; };
 			}} class="space-y-4">
 				<div class="space-y-2">
-					<Label for="email">Email address</Label>
-					<Input id="email" name="email" type="email" placeholder="you@example.com" required disabled={loading} />
+					<Label for="email">Correo electrónico</Label>
+					<Input id="email" name="email" type="email" placeholder="tu@correo.com" required disabled={loading} />
 				</div>
 
 				<div class="space-y-2">
-					<Label for="password">Password</Label>
+					<Label for="phone">Número de WhatsApp</Label>
+					<div class="flex">
+						<select
+							name="countryCode"
+							disabled={loading}
+							class="flex h-10 items-center rounded-l-md border border-r-0 border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							<option value="+52">🇲🇽 +52</option>
+							<option value="+1">🇺🇸 +1</option>
+						</select>
+						<Input
+							id="phone"
+							name="phone"
+							type="tel"
+							placeholder="664 123 4567"
+							required
+							disabled={loading}
+							class="rounded-l-none"
+							inputmode="numeric"
+						/>
+					</div>
+				</div>
+
+				<div class="space-y-2">
+					<Label for="password">Contraseña</Label>
 					<Input id="password" name="password" type="password" placeholder="••••••••" required disabled={loading} />
 				</div>
 
 				<div class="space-y-2">
-					<Label for="passwordConfirm">Confirm Password</Label>
+					<Label for="passwordConfirm">Confirmar contraseña</Label>
 					<Input id="passwordConfirm" name="passwordConfirm" type="password" placeholder="••••••••" required disabled={loading} />
 				</div>
 
 				<Button type="submit" size="lg" class="w-full mt-2" disabled={loading}>
-					{loading ? 'Creating account...' : 'Create account'}
+					{loading ? 'Creando cuenta...' : 'Crear cuenta'}
 				</Button>
 			</form>
 		{/if}
 
 		<div class="mt-8 text-center">
-			<a href="/" class="text-sm text-slate-600 hover:text-gray-900">← Back to home</a>
+			<a href="/" class="text-sm text-slate-600 hover:text-gray-900">← Volver al inicio</a>
 		</div>
 	</div>
 </div>

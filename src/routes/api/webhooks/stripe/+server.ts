@@ -62,29 +62,42 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
-	const customerEmail = session.customer_email || session.customer_details?.email;
+	const userId = session.metadata?.userId;
+	const platesRaw = session.metadata?.plates;
 
-	if (!customerEmail) {
-		console.error('No customer email in checkout session');
+	if (!userId || !platesRaw) {
+		console.error('Missing userId or plates in checkout session metadata');
 		return;
 	}
 
 	const pb = await getAdminPb();
 	let user;
 	try {
-		user = await pb.collection('users').getFirstListItem(`email="${customerEmail}"`);
+		user = await pb.collection('users').getOne(userId);
 	} catch {
-		console.error(`User not found for email: ${customerEmail}`);
+		console.error(`User not found: ${userId}`);
 		return;
 	}
 
 	const subscriptionId = session.subscription as string;
 	const customerId = session.customer as string;
-	const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-	const tier = getTierFromPrice(subscription.items.data[0]?.price.unit_amount || 0);
+
+	// Create vehicle records for each plate (skip duplicates)
+	const plates = platesRaw.split(',').map((p) => p.trim().toUpperCase()).filter((p) => /^[A-Z0-9]{7,}$/.test(p));
+	for (const plate of plates) {
+		let existing;
+		try {
+			existing = await pb.collection('vehicles').getFirstListItem(`user="${userId}" && plate="${plate}"`);
+		} catch {
+			existing = null;
+		}
+		if (!existing) {
+			await pb.collection('vehicles').create({ user: userId, plate });
+		}
+	}
 
 	await pb.collection('users').update(user.id, {
-		subscription_tier: tier,
+		subscription_tier: 'active',
 		stripe_customer_id: customerId,
 		stripe_subscription_id: subscriptionId,
 		subscription_status: 'active',
@@ -104,10 +117,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 		return;
 	}
 
-	const tier = getTierFromPrice(subscription.items.data[0]?.price.unit_amount || 0);
-
 	await pb.collection('users').update(user.id, {
-		subscription_tier: tier,
+		subscription_tier: 'active',
 		stripe_subscription_id: subscription.id,
 		subscription_status: subscription.status,
 		subscription_updated_at: new Date().toISOString()
@@ -129,12 +140,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 	await pb.collection('users').update(user.id, {
 		subscription_tier: 'free',
 		subscription_status: 'cancelled',
+		stripe_subscription_id: '',
 		subscription_updated_at: new Date().toISOString()
 	});
-}
-
-function getTierFromPrice(amount: number): 'free' | 'pro' | 'business' {
-	if (amount >= 60000) return 'business';
-	if (amount >= 20000) return 'pro';
-	return 'free';
 }

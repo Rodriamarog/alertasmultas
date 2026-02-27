@@ -12,13 +12,13 @@
 	<div class="w-full max-w-md">
 		<div class="mb-8 flex justify-center">
 			<a href="/" class="text-lg">
-				<span class="font-bold text-slate-800">Alert</span><span class="text-slate-500">as</span>
+				<span class="font-bold text-slate-800">Alertas</span><span class="text-slate-500">Multas</span>
 			</a>
 		</div>
 
 		<div class="text-center mb-8">
-			<h1 class="text-4xl font-bold text-gray-900 mb-2">Forgot password?</h1>
-			<p class="text-slate-600">Enter your email and we'll send you a link to reset your password.</p>
+			<h1 class="text-4xl font-bold text-gray-900 mb-2">¿Olvidaste tu contraseña?</h1>
+			<p class="text-slate-600">Ingresa tu correo y te enviaremos un enlace para restablecerla.</p>
 		</div>
 
 		{#if form?.success}
@@ -28,9 +28,9 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					<div>
-						<h3 class="text-sm font-medium text-green-800">Check your email</h3>
+						<h3 class="text-sm font-medium text-green-800">Revisa tu correo</h3>
 						<p class="text-xs text-green-700 mt-1">
-							If an account exists with <strong>{form.email}</strong>, you will receive a reset link shortly.
+							Si existe una cuenta con <strong>{form.email}</strong>, recibirás el enlace en breve.
 						</p>
 					</div>
 				</div>
@@ -43,18 +43,18 @@
 				return async ({ update }) => { await update(); loading = false; };
 			}} class="space-y-4">
 				<div class="space-y-2">
-					<Label for="email">Email address</Label>
-					<Input id="email" name="email" type="email" placeholder="you@example.com" required disabled={loading} />
+					<Label for="email">Correo electrónico</Label>
+					<Input id="email" name="email" type="email" placeholder="tu@correo.com" required disabled={loading} />
 				</div>
 
 				<Button type="submit" size="lg" class="w-full mt-2" disabled={loading}>
-					{loading ? 'Sending...' : 'Send reset link'}
+					{loading ? 'Enviando...' : 'Enviar enlace'}
 				</Button>
 			</form>
 		{/if}
 
 		<div class="mt-8 text-center">
-			<a href="/login" class="text-sm text-slate-600 hover:text-gray-900">← Back to login</a>
+			<a href="/login" class="text-sm text-slate-600 hover:text-gray-900">← Volver al inicio de sesión</a>
 		</div>
 	</div>
 </div>
