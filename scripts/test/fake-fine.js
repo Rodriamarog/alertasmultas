@@ -61,8 +61,8 @@ async function main() {
 	const fakeFine = {
 		folio: noCleanup ? 'TEST-DEDUP-001' : `TEST-${Date.now()}`,
 		fecha: new Date().toISOString().split('T')[0],
-		descripcion: 'Exceso de velocidad (TEST)',
-		monto: 500
+		descripcion: 'Infraccion por exceso de velocidad',
+		monto: 3500
 	};
 
 	// Simulate scraper deduplication check

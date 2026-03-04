@@ -30,29 +30,51 @@
 
 	<!-- Hero -->
 	<section class="max-w-5xl mx-auto px-5 pt-14 pb-12 md:pt-20 md:pb-16">
-		<div class="grid lg:grid-cols-[2fr_3fr] gap-10 items-center">
-			<div>
-				<h1 class="text-3xl md:text-4xl font-bold text-gray-900 leading-tight tracking-tight">
-					Recibe una alerta por WhatsApp en cuanto aparezca una multa en tus placas de Tijuana
-				</h1>
-				<p class="mt-5 text-lg text-gray-600 leading-relaxed">
-					Las multas en Tijuana llegan sin aviso y sin papel. Si no las pagas a tiempo <strong class="text-gray-900">se duplican</strong> — y si te paran con una pendiente, tu carro va directo al <strong class="text-gray-900">corralón</strong>.
-				</p>
-				<div class="mt-8 flex flex-col sm:flex-row gap-3">
-					<a href="/register" class="flex items-center justify-center gap-2 bg-black text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-gray-800 transition-colors">
-						Crear cuenta
-					</a>
-					<a href="#precios" class="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 px-7 py-3.5 rounded-xl text-base font-medium hover:border-gray-400 transition-colors">
-						Ver precios →
-					</a>
-				</div>
-				<p class="mt-4 text-sm text-gray-400">$29 MXN por placa al mes · Cancela cuando quieras</p>
+		<div class="max-w-2xl mx-auto text-center">
+			<h1 class="text-3xl md:text-4xl font-bold text-gray-900 leading-tight tracking-tight">
+				Recibe una alerta por WhatsApp en cuanto aparezca una multa en tus placas de Tijuana
+			</h1>
+			<p class="mt-5 text-lg text-gray-600 leading-relaxed">
+				Las multas en Tijuana llegan sin aviso y sin papel. Si no las pagas a tiempo <strong class="text-gray-900">se duplican</strong> — y si te paran con una pendiente, tu carro va directo al <strong class="text-gray-900">corralón</strong>.
+			</p>
+			<div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+				<a href="/register" class="flex items-center justify-center gap-2 bg-black text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-gray-800 transition-colors">
+					Crear cuenta
+				</a>
+				<a href="#precios" class="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-700 px-7 py-3.5 rounded-xl text-base font-medium hover:border-gray-400 transition-colors">
+					Ver precios →
+				</a>
 			</div>
-			<div class="mt-6 lg:mt-0">
+			<p class="mt-4 text-sm text-gray-400">$29 MXN por placa al mes · Cancela cuando quieras</p>
+		</div>
+		<div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+			<div class="flex flex-col items-center gap-2 w-4/5 sm:w-[55%]">
+				<span class="text-sm font-semibold uppercase tracking-widest text-red-500">Multa encontrada</span>
 				<img
-					src="/images/carguy.jpg"
-					alt="Conductor en Tijuana"
-					class="w-full h-auto rounded-2xl"
+					src="/images/infraccion.png"
+					alt="Infracción de tránsito en Tijuana"
+					class="w-full rounded-xl shadow-lg"
+					loading="eager"
+				/>
+			</div>
+			<div class="shrink-0 rotate-90 sm:rotate-0" aria-hidden="true">
+				<svg width="56" height="32" viewBox="0 0 56 32" fill="none">
+					<path
+						class="arrow-path"
+						d="M2,16 C6,5 12,27 18,16 C24,5 30,27 36,16 L47,16 M41,10 L47,16 L41,22"
+						stroke="#111827"
+						stroke-width="2.5"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
+			</div>
+			<div class="flex flex-col items-center gap-2 w-4/5 sm:w-[35%]">
+				<span class="text-sm font-semibold uppercase tracking-widest text-green-600">Alerta enviada</span>
+				<img
+					src="/images/whatsapp-alert.jpeg"
+					alt="Alerta de multa por WhatsApp"
+					class="w-full rounded-xl shadow-lg"
 					loading="eager"
 				/>
 			</div>
@@ -217,3 +239,20 @@
 	</footer>
 
 </div>
+
+<style>
+	.arrow-path {
+		stroke-dasharray: 100;
+		stroke-dashoffset: 100;
+		animation: draw-arrow 2.2s ease-in-out infinite;
+	}
+
+	@keyframes draw-arrow {
+		0%   { stroke-dashoffset: 100; opacity: 1; }
+		60%  { stroke-dashoffset: 0;   opacity: 1; }
+		82%  { stroke-dashoffset: 0;   opacity: 1; }
+		94%  { stroke-dashoffset: 0;   opacity: 0; }
+		95%  { stroke-dashoffset: 100; opacity: 0; }
+		100% { stroke-dashoffset: 100; opacity: 1; }
+	}
+</style>
