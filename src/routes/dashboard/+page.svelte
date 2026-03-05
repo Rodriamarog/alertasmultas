@@ -8,7 +8,7 @@
 
 	let vehicles = $state(data.vehicles ?? []);
 	let fines = $state(data.fines ?? []);
-	let activeTab = $state<'vehiculos' | 'multas'>('multas');
+	let activeTab = $state<'vehiculos' | 'multas'>('vehiculos');
 
 	// Modal state
 	let showModal = $state(false);
@@ -170,20 +170,20 @@
 	<!-- Mobile tab bar (hidden on lg+) -->
 	<div class="lg:hidden shrink-0 flex border-b bg-white">
 		<button
-			class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors {activeTab === 'multas'
-				? 'border-gray-900 text-gray-900'
-				: 'border-transparent text-gray-500'}"
-			onclick={() => (activeTab = 'multas')}
-		>
-			Multas {#if fines.length > 0}<span class="ml-1 text-xs bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5">{fines.length}</span>{/if}
-		</button>
-		<button
 			class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors {activeTab === 'vehiculos'
 				? 'border-gray-900 text-gray-900'
 				: 'border-transparent text-gray-500'}"
 			onclick={() => (activeTab = 'vehiculos')}
 		>
 			Vehículos {#if vehicles.length > 0}<span class="ml-1 text-xs bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5">{vehicles.length}</span>{/if}
+		</button>
+		<button
+			class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors {activeTab === 'multas'
+				? 'border-gray-900 text-gray-900'
+				: 'border-transparent text-gray-500'}"
+			onclick={() => (activeTab = 'multas')}
+		>
+			Multas {#if fines.length > 0}<span class="ml-1 text-xs bg-gray-100 text-gray-600 rounded-full px-1.5 py-0.5">{fines.length}</span>{/if}
 		</button>
 	</div>
 
@@ -235,6 +235,9 @@
 							<tr>
 								<td colspan="5" class="px-4 py-16 text-center text-sm text-gray-400">
 									No se han detectado multas.
+									<div class="mt-1 text-xs text-gray-300">
+										Última actualización: {new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
+									</div>
 								</td>
 							</tr>
 						{:else}
