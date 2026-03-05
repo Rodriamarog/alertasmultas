@@ -46,6 +46,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			mode: 'subscription',
 			customer: customerId,
 			line_items: [{ price: priceId, quantity }],
+			allow_promotion_codes: true,
 			success_url: `${env.PUBLIC_APP_URL || 'http://localhost:5173'}/dashboard?success=true`,
 			cancel_url: `${env.PUBLIC_APP_URL || 'http://localhost:5173'}?cancelled=true`,
 			metadata: {
