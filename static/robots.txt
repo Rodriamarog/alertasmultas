@@ -1,3 +1,8 @@
-# allow crawling everything by default
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /settings
+Disallow: /checkout
+Disallow: /debug
+Disallow: /api/
+Sitemap: https://alertasmultas.com/sitemap.xml

@@ -15,6 +15,80 @@
 	} from '@lucide/svelte';
 </script>
 
+<svelte:head>
+	<title>Alertas de Multas Tijuana por WhatsApp | AlertasMultas</title>
+	<meta name="description" content="Evita que tus multas se dupliquen o tu carro vaya al corralón. AlertasMultas monitorea tus placas en Tijuana y te avisa por WhatsApp al instante. $29 MXN/mes." />
+	<link rel="canonical" href="https://alertasmultas.com/" />
+	<meta property="og:title" content="Alertas de Multas Tijuana por WhatsApp | AlertasMultas" />
+	<meta property="og:description" content="Evita que tus multas se dupliquen o tu carro vaya al corralón. AlertasMultas monitorea tus placas en Tijuana y te avisa por WhatsApp al instante. $29 MXN/mes." />
+	<meta property="og:image" content="https://alertasmultas.com/images/whatsapp-alert.jpeg" />
+	<meta property="og:url" content="https://alertasmultas.com/" />
+	{@html `<script type="application/ld+json">${JSON.stringify([
+		{
+			"@context": "https://schema.org",
+			"@type": "SoftwareApplication",
+			"name": "AlertasMultas",
+			"description": "Monitoreo diario de multas de tránsito en Tijuana con alertas instantáneas por WhatsApp.",
+			"operatingSystem": "Web",
+			"applicationCategory": "UtilitiesApplication",
+			"offers": {
+				"@type": "Offer",
+				"price": "29",
+				"priceCurrency": "MXN",
+				"priceSpecification": {
+					"@type": "UnitPriceSpecification",
+					"price": "29",
+					"priceCurrency": "MXN",
+					"unitText": "placa al mes"
+				}
+			}
+		},
+		{
+			"@context": "https://schema.org",
+			"@type": "LocalBusiness",
+			"name": "AlertasMultas",
+			"description": "Servicio de alertas de multas de tránsito en Tijuana vía WhatsApp.",
+			"address": {
+				"@type": "PostalAddress",
+				"addressLocality": "Tijuana",
+				"addressRegion": "Baja California",
+				"addressCountry": "MX"
+			},
+			"areaServed": "Tijuana"
+		},
+		{
+			"@context": "https://schema.org",
+			"@type": "FAQPage",
+			"mainEntity": [
+				{
+					"@type": "Question",
+					"name": "¿Por qué no me avisan cuando me ponen una multa en Tijuana?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Las multas de estacionamiento en Tijuana no siempre vienen con papel. La infracción va directo al sistema y tú no te enteras. La primera vez que lo sabes puede ser cuando ya se duplicó."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "¿Qué pasa si no pago una multa de tránsito a tiempo en Tijuana?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Las multas no pagadas acumulan recargos rápidamente. Lo que hoy son $500 pesos, pasado el plazo puede costar el doble."
+					}
+				},
+				{
+					"@type": "Question",
+					"name": "¿Me pueden mandar al corralón por una multa pendiente en Tijuana?",
+					"acceptedAnswer": {
+						"@type": "Answer",
+						"text": "Sí. Si te detienen en un retén con una infracción pendiente, se llevan tu vehículo. Sacarlo del corralón puede costarte mucho más que la multa original."
+					}
+				}
+			]
+		}
+	])}<\/script>`}
+</svelte:head>
+
 <div class="bg-white">
 
 	<!-- Nav -->
