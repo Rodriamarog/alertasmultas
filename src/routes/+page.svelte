@@ -22,7 +22,7 @@
 		<div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
 			<span class="text-lg font-bold text-gray-900">AlertasMultas</span>
 			<div class="flex items-center gap-3">
-				<a href="/login" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2">Iniciar sesión</a>
+				<a href="/login" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 whitespace-nowrap">Iniciar sesión</a>
 				<a href="/register" class="text-sm bg-black text-white px-4 py-2 rounded-lg font-medium">Registrarse</a>
 			</div>
 		</div>
