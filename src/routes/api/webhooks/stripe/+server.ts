@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
+import { env as pubEnv } from '$env/dynamic/public';
 import PocketBase from 'pocketbase';
 import { stripe, webhookSecret } from '$lib/server/stripe';
 import type Stripe from 'stripe';
@@ -9,7 +10,7 @@ import twilio from 'twilio';
 const WELCOME_TEMPLATE_SID = 'HXd9966754893693dff0805363cd061b61';
 
 async function getAdminPb() {
-	const pb = new PocketBase(env.PUBLIC_POCKETBASE_URL || 'http://localhost:8090');
+	const pb = new PocketBase(pubEnv.PUBLIC_POCKETBASE_URL || 'http://localhost:8090');
 	await pb.collection('_superusers').authWithPassword(env.POCKETBASE_ADMIN_EMAIL || '', env.POCKETBASE_ADMIN_PASSWORD || '');
 	return pb;
 }
