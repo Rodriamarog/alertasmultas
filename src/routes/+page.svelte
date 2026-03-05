@@ -19,11 +19,11 @@
 
 	<!-- Nav -->
 	<header class="sticky top-0 z-50 bg-white border-b border-gray-100">
-		<div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-			<span class="text-lg font-bold text-gray-900">AlertasMultas</span>
-			<div class="flex items-center gap-3">
-				<a href="/login" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 whitespace-nowrap">Iniciar sesión</a>
-				<a href="/register" class="text-sm bg-black text-white px-4 py-2 rounded-lg font-medium">Registrarse</a>
+		<div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+			<span class="text-base font-bold text-gray-900 whitespace-nowrap">AlertasMultas</span>
+			<div class="flex items-center gap-2">
+				<a href="/login" class="text-sm text-gray-600 hover:text-gray-900 px-2 py-2 whitespace-nowrap">Iniciar sesión</a>
+				<a href="/register" class="text-sm bg-black text-white px-3 py-2 rounded-lg font-medium whitespace-nowrap">Registrarse</a>
 			</div>
 		</div>
 	</header>
