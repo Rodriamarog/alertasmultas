@@ -24,7 +24,7 @@ const env = Object.fromEntries(
 		})
 );
 
-const PB_URL = 'http://localhost:8090';
+const PB_URL = env.POCKETBASE_INTERNAL_URL || 'http://localhost:8091';
 const ADMIN_EMAIL = env.POCKETBASE_ADMIN_EMAIL;
 const ADMIN_PASSWORD = env.POCKETBASE_ADMIN_PASSWORD;
 const TIJUANA_USER = env.TIJUANA_USER;
